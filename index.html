@@ -461,7 +461,7 @@ document.getElementById("cancelBtn")
   });
 
 document.getElementById("saveBtn")
-  .addEventListener("click", () => {
+  .addEventListener("click", async () => {
 
     const title =
       document.getElementById("title").value.trim();
@@ -489,6 +489,7 @@ document.getElementById("saveBtn")
     reminders.push(reminder);
 
     saveData();
+    await syncWithServer(reminder);
     render();
 
     document.getElementById("title").value = "";
