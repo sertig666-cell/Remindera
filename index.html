@@ -303,7 +303,22 @@ input[type="datetime-local"] {
 "use strict";
 
 const STORAGE_KEY = "myRemindersV1";
+  
+const SERVER_URL = "https://my-reminders-server.sertig666.workers.dev";
 
+async function syncWithServer(reminder) {
+  try {
+    await fetch(SERVER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(reminder)
+    });
+  } catch (error) {
+    console.log("Server sync error:", error);
+  }
+}
 let reminders = JSON.parse(
   localStorage.getItem(STORAGE_KEY) || "[]"
 );
