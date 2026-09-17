@@ -286,10 +286,21 @@ input[type="datetime-local"] {
 
     <label>Повторення</label>
     <select id="repeat">
-      <option value="none">Не повторювати</option>
-      <option value="daily">Щодня</option>
-      <option value="weekly">Щотижня</option>
-    </select>
+  <option value="none">Не повторювати</option>
+  <option value="daily">Щодня</option>
+  <option value="weekly">Щотижня</option>
+  <option value="custom">Певні дні</option>
+</select>
+
+<div id="days" style="display:none;">
+  <label><input type="checkbox" value="1"> Пн</label>
+  <label><input type="checkbox" value="2"> Вт</label>
+  <label><input type="checkbox" value="3"> Ср</label>
+  <label><input type="checkbox" value="4"> Чт</label>
+  <label><input type="checkbox" value="5"> Пт</label>
+  <label><input type="checkbox" value="6"> Сб</label>
+  <label><input type="checkbox" value="0"> Нд</label>
+</div>
 
     <div class="modal-buttons">
       <button id="cancelBtn">Скасувати</button>
@@ -470,21 +481,40 @@ document.getElementById("saveBtn")
       document.getElementById("date").value;
 
     if (!title || !date) {
-      alert("Заповни назву та дату.");
-      return;
-    }
+  alert("Заповни назву та дату.");
+  return;
+}
 
-    const reminder = {
-      id: Date.now().toString(),
-      title: title,
-      date: date,
-      oneHour:
-        document.getElementById("oneHour").checked,
-      thirtyMin:
-        document.getElementById("thirtyMin").checked,
-      repeat:
-        document.getElementById("repeat").value
-    };
+const repeatValue =
+  document.getElementById("repeat").value;
+
+if (
+  repeatValue === "custom" &&
+  document.querySelectorAll("#days input:checked").length === 0
+) {
+  alert("Обери хоча б один день.");
+  return;
+}
+
+
+const selectedDays =
+  repeatValue === "custom"
+    ? Array.from(
+        document.querySelectorAll("#days input:checked")
+      ).map(input => Number(input.value))
+    : [];
+
+const reminder = {
+  id: Date.now().toString(),
+  title: title,
+  date: date,
+  oneHour:
+    document.getElementById("oneHour").checked,
+  thirtyMin:
+    document.getElementById("thirtyMin").checked,
+  repeat: repeatValue,
+  days: selectedDays
+};
 
     reminders.push(reminder);
 
@@ -496,7 +526,11 @@ document.getElementById("saveBtn")
 
     modal.classList.remove("show");
   });
-
+document.getElementById("repeat").addEventListener("change", function () {
+  document.getElementById("days").style.display =
+    this.value === "custom" ? "flex" : "none";
+});
+  
 render();
 </script>
 
