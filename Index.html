@@ -1,1 +1,488 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1115">
+<link rel="manifest" href="./manifest.json">
 
+<title>Нагадування</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  background:
+    radial-gradient(circle at top left, #33245c 0%, transparent 38%),
+    radial-gradient(circle at bottom right, #182b4d 0%, transparent 35%),
+    #0b0d12;
+  color: white;
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+
+.app {
+  max-width: 600px;
+  margin: auto;
+  padding: 24px 16px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-size: 34px;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.header p {
+  color: #9b9ba7;
+  margin: 7px 0 0;
+}
+
+.card {
+  background: rgba(255,255,255,0.075);
+  border: 1px solid rgba(255,255,255,0.09);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 12px 35px rgba(0,0,0,.25);
+  animation: appear .35s ease;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 45px 15px;
+  color: #8f909b;
+}
+
+.empty-icon {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+
+.reminder-title {
+  font-size: 21px;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.reminder-time {
+  font-size: 16px;
+  color: #b8b7c5;
+}
+
+.reminder-date {
+  margin-top: 5px;
+  color: #8d8d99;
+  font-size: 14px;
+}
+
+.badges {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.badge {
+  background: rgba(120,90,255,.18);
+  color: #c5baff;
+  padding: 7px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+button {
+  border: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 15px;
+  padding: 13px 16px;
+  background: rgba(255,255,255,.1);
+}
+
+button:active {
+  transform: scale(.96);
+}
+
+.primary {
+  background: linear-gradient(135deg, #7357ff, #4d35c9);
+  flex: 1;
+}
+
+.delete {
+  background: rgba(255,70,90,.13);
+  color: #ff7180;
+}
+
+.bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: rgba(10,11,16,.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.add-button {
+  width: 100%;
+  max-width: 568px;
+  display: block;
+  margin: auto;
+  background: linear-gradient(135deg, #7357ff, #4d35c9);
+  box-shadow: 0 8px 25px rgba(90,60,220,.35);
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  display: none;
+  align-items: flex-end;
+  z-index: 10;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+  background: #171921;
+  border-radius: 28px 28px 0 0;
+  padding: 22px 18px calc(25px + env(safe-area-inset-bottom));
+  animation: sheet .3s ease;
+}
+
+@keyframes sheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.sheet h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  color: #a5a5b0;
+  font-size: 14px;
+  margin: 15px 0 7px;
+}
+
+input, select {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.07);
+  color: white;
+  border-radius: 15px;
+  padding: 14px;
+  font-size: 16px;
+  outline: none;
+}
+
+input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+.check-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  align-items: center;
+}
+
+.check-row input {
+  width: 20px;
+  height: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  flex: 1;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <h1>Нагадування</h1>
+    <p>Твої плани та важливі справи</p>
+  </div>
+
+  <div id="list"></div>
+
+</div>
+
+<div class="bottom">
+  <button class="add-button" id="addBtn">＋ Додати план</button>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+
+    <h2>Новий план</h2>
+
+    <label>Назва</label>
+    <input id="title" type="text" placeholder="Наприклад: Тренування">
+
+    <label>Дата та час</label>
+    <input id="date" type="datetime-local">
+
+    <div class="check-row">
+      <input id="oneHour" type="checkbox" checked>
+      <span>Нагадати за 1 годину</span>
+    </div>
+
+    <div class="check-row">
+      <input id="thirtyMin" type="checkbox" checked>
+      <span>Нагадати за 30 хвилин</span>
+    </div>
+
+    <label>Повторення</label>
+    <select id="repeat">
+      <option value="none">Не повторювати</option>
+      <option value="daily">Щодня</option>
+      <option value="weekly">Щотижня</option>
+    </select>
+
+    <div class="modal-buttons">
+      <button id="cancelBtn">Скасувати</button>
+      <button class="primary" id="saveBtn">Зберегти</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+
+const STORAGE_KEY = "myRemindersV1";
+
+let reminders = JSON.parse(
+  localStorage.getItem(STORAGE_KEY) || "[]"
+);
+
+const list = document.getElementById("list");
+const modal = document.getElementById("modal");
+
+function saveData() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(reminders)
+  );
+}
+
+function formatDate(date) {
+  return date.toLocaleDateString("uk-UA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric"
+  });
+}
+
+function formatTime(date) {
+  return date.toLocaleTimeString("uk-UA", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function render() {
+
+  list.innerHTML = "";
+
+  if (reminders.length === 0) {
+    list.innerHTML = `
+      <div class="card empty">
+        <div class="empty-icon">🔔</div>
+        <div>Поки що немає планів</div>
+        <div style="margin-top:6px;font-size:14px;">
+          Додай свій перший план
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  reminders.sort((a,b) =>
+    new Date(a.date) - new Date(b.date)
+  );
+
+  reminders.forEach(reminder => {
+
+    const date = new Date(reminder.date);
+
+    let badges = "";
+
+    if (reminder.oneHour)
+      badges += `<div class="badge">🔔 −1 година</div>`;
+
+    if (reminder.thirtyMin)
+      badges += `<div class="badge">🔔 −30 хв</div>`;
+
+    if (reminder.repeat !== "none")
+      badges += `<div class="badge">🔁 ${
+        reminder.repeat === "daily"
+          ? "Щодня"
+          : "Щотижня"
+      }</div>`;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="reminder-title">
+        ${escapeHTML(reminder.title)}
+      </div>
+
+      <div class="reminder-time">
+        ${formatTime(date)}
+      </div>
+
+      <div class="reminder-date">
+        ${formatDate(date)}
+      </div>
+
+      <div class="badges">
+        ${badges}
+      </div>
+
+      <div class="actions">
+        <button class="delete" data-id="${reminder.id}">
+          Видалити
+        </button>
+      </div>
+    `;
+
+    list.appendChild(card);
+  });
+
+  document.querySelectorAll(".delete").forEach(button => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.id;
+
+      reminders = reminders.filter(
+        reminder => reminder.id !== id
+      );
+
+      saveData();
+      render();
+    });
+  });
+}
+
+function escapeHTML(text) {
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+document.getElementById("addBtn")
+  .addEventListener("click", () => {
+    modal.classList.add("show");
+
+    const now = new Date();
+
+    now.setMinutes(
+      now.getMinutes() - now.getTimezoneOffset()
+    );
+
+    document.getElementById("date").value =
+      now.toISOString().slice(0,16);
+  });
+
+document.getElementById("cancelBtn")
+  .addEventListener("click", () => {
+    modal.classList.remove("show");
+  });
+
+document.getElementById("saveBtn")
+  .addEventListener("click", () => {
+
+    const title =
+      document.getElementById("title").value.trim();
+
+    const date =
+      document.getElementById("date").value;
+
+    if (!title || !date) {
+      alert("Заповни назву та дату.");
+      return;
+    }
+
+    const reminder = {
+      id: Date.now().toString(),
+      title: title,
+      date: date,
+      oneHour:
+        document.getElementById("oneHour").checked,
+      thirtyMin:
+        document.getElementById("thirtyMin").checked,
+      repeat:
+        document.getElementById("repeat").value
+    };
+
+    reminders.push(reminder);
+
+    saveData();
+    render();
+
+    document.getElementById("title").value = "";
+
+    modal.classList.remove("show");
+  });
+
+render();
+</script>
+
+</body>
+</html>
