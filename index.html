@@ -392,12 +392,23 @@ function render() {
     if (reminder.thirtyMin)
       badges += `<div class="badge">🔔 −30 хв</div>`;
 
-    if (reminder.repeat !== "none")
-      badges += `<div class="badge">🔁 ${
-        reminder.repeat === "daily"
-          ? "Щодня"
-          : "Щотижня"
-      }</div>`;
+    if (reminder.repeat !== "none") {
+  let repeatText = "Щотижня";
+
+  if (reminder.repeat === "daily") {
+    repeatText = "Щодня";
+  }
+
+  if (reminder.repeat === "custom") {
+    const dayNames = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+
+    repeatText = reminder.days
+      .map(day => dayNames[day])
+      .join(" · ");
+  }
+
+  badges += `<div class="badge">🔁 ${repeatText}</div>`;
+}
 
     const card = document.createElement("div");
     card.className = "card";
