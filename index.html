@@ -351,6 +351,33 @@ async function syncWithServer(reminder) {
     console.log("Supabase sync error:", error);
   }
 }
+  async function deleteFromServer(id) {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/reminders?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Prefer": "return=minimal"
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.log(
+        "Supabase delete error:",
+        await response.text()
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log("Supabase delete error:", error);
+    return false;
+  }
+}
 let reminders = JSON.parse(
   localStorage.getItem(STORAGE_KEY) || "[]"
 );
@@ -462,17 +489,27 @@ function render() {
   });
 
   document.querySelectorAll(".delete").forEach(button => {
-    button.addEventListener("click", () => {
-      const id = button.dataset.id;
+  button.addEventListener("click", async () => {
+    const id = button.dataset.id;
 
-      reminders = reminders.filter(
-        reminder => reminder.id !== id
-      );
+    button.disabled = true;
 
-      saveData();
-      render();
-    });
+    const deleted = await deleteFromServer(id);
+
+    if (!deleted) {
+      button.disabled = false;
+      alert("Не вдалося видалити нагадування.");
+      return;
+    }
+
+    reminders = reminders.filter(
+      reminder => reminder.id !== id
+    );
+
+    saveData();
+    render();
   });
+});
 }
 
 function escapeHTML(text) {
