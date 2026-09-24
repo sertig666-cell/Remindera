@@ -315,19 +315,40 @@ input[type="datetime-local"] {
 
 const STORAGE_KEY = "myRemindersV1";
   
-const SERVER_URL = "https://my-reminders-server.sertig666.workers.dev";
+const SUPABASE_URL = "https://efqlvnwxygvbpcbzbbbn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_HReuWBqH-p1TxoPZBrCKjw_2y7kTL3u";
 
 async function syncWithServer(reminder) {
   try {
-    await fetch(SERVER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(reminder)
-    });
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/reminders`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          id: reminder.id,
+          title: reminder.title,
+          date: reminder.date,
+          one_hour: reminder.oneHour,
+          thirty_min: reminder.thirtyMin,
+          repeat: reminder.repeat,
+          days: reminder.days
+        })
+      }
+    );
+
+    if (!response.ok) {
+      console.log(
+        "Supabase error:",
+        await response.text()
+      );
+    }
   } catch (error) {
-    console.log("Server sync error:", error);
+    console.log("Supabase sync error:", error);
   }
 }
 let reminders = JSON.parse(
