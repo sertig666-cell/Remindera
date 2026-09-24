@@ -378,6 +378,46 @@ async function syncWithServer(reminder) {
     return false;
   }
 }
+  async function loadFromServer() {
+  try {
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/reminders?select=id,title,date,one_hour,thirty_min,repeat,days&order=date.asc`,
+      {
+        headers: {
+          "apikey": SUPABASE_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.log(
+        "Supabase load error:",
+        await response.text()
+      );
+      render();
+      return;
+    }
+
+    const data = await response.json();
+
+    reminders = data.map(item => ({
+      id: item.id,
+      title: item.title,
+      date: item.date,
+      oneHour: item.one_hour,
+      thirtyMin: item.thirty_min,
+      repeat: item.repeat,
+      days: item.days || []
+    }));
+
+    saveData();
+    render();
+
+  } catch (error) {
+    console.log("Supabase load error:", error);
+    render();
+  }
+}
 let reminders = JSON.parse(
   localStorage.getItem(STORAGE_KEY) || "[]"
 );
@@ -600,7 +640,7 @@ document.getElementById("repeat").addEventListener("change", function () {
     this.value === "custom" ? "flex" : "none";
 });
   
-render();
+loadFromServer();
 </script>
 
 </body>
